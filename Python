@@ -1,0 +1,70 @@
+
+import tkinter as tk
+import sounddevice as sd
+import numpy as np
+import os
+from datetime import datetime
+
+# Directory to store connection history
+history_dir = "connection_history"
+if not os.path.exists(history_dir):
+    os.makedirs(history_dir)
+
+class AntennaController:
+    def __init__(self, master):
+        self.master = master
+        self.master.title("Antenna Controller")
+        
+        # State variables
+        self.is_on = False
+        self.volume = 0.5
+        self.pitch = 440.0  # Hz
+        self.power = 1.0
+        
+        # Create GUI elements
+        self.on_off_button = tk.Button(master, text="Turn On", command=self.toggle_on_off)
+        self.on_off_button.pack()
+        
+        self.volume_scale = tk.Scale(master, from_=0, to=1, resolution=0.01, orient=tk.HORIZONTAL, label="Volume", command=self.set_volume)
+        self.volume_scale.set(self.volume)
+        self.volume_scale.pack()
+        
+        self.pitch_scale = tk.Scale(master, from_=100, to=1000, resolution=1, orient=tk.HORIZONTAL, label="Pitch (Hz)", command=self.set_pitch)
+        self.pitch_scale.set(self.pitch)
+        self.pitch_scale.pack()
+        
+        self.power_scale = tk.Scale(master, from_=0, to=10, resolution=0.1, orient=tk.HORIZONTAL, label="Power", command=self.set_power)
+        self.power_scale.set(self.power)
+        self.power_scale.pack()
+        
+        self.log_button = tk.Button(master, text="Log Connection", command=self.log_connection)
+        self.log_button.pack()
+
+    def toggle_on_off(self):
+        self.is_on = not self.is_on
+        self.on_off_button.config(text="Turn Off" if self.is_on else "Turn On")
+        self.log_connection()  # Log the action
+
+    def set_volume(self, value):
+        self.volume = float(value)
+
+    def set_pitch(self, value):
+        self.pitch = float(value)
+        # Here you would typically adjust the audio output based on pitch
+
+    def set_power(self, value):
+        self.power = float(value)
+
+    def log_connection(self):
+        timestamp = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
+        log_entry = f"{timestamp} • {'ON' if self.is_on else 'OFF'} | Volume: {self.volume} | Pitch: {self.pitch} | Power: {self.power}\n"
+        
+        with open(os.path.join(history_dir, "connection_log.txt"), "a") as log_file:
+            log_file.write(log_entry)
+
+        print(log_entry)  # Print to console for immediate feedback
+
+if __name__ == "__main__":
+    root = tk.Tk()
+    app = AntennaController(root)
+    root.mainloop()
